@@ -1,0 +1,19 @@
+# Bitcoin Indicators Table: Rankings, Weights, APIs & Resources
+
+| Rank | Indicator | Weight | API Endpoint | Information Source | Notes |
+|------|-----------|--------|--------------|-------------------|--------|
+| 1 | **Pi Cycle Top Indicator** | 30% | `https://studio.glassnode.com/metrics?a=BTC&m=indicators.PiCycleTop` | [Bitcoin Magazine Pro](https://www.bitcoinmagazinepro.com/charts/pi-cycle-top-indicator/)<br>[CoinCodex](https://coincodex.com/bitcoin-pi-cycle-top-indicator/)<br>[Blockchain.com](https://www.blockchain.com/explorer/charts/pi-cycle-top-indicator) | 111DMA crossing 350DMA×2 signals cycle tops within 3 days historically |
+| 2 | **MVRV Ratio** | 28% | `https://api.glassnode.com/v1/metrics/market/mvrv` | [Glassnode](https://docs.glassnode.com/basic-api/endpoints/market) | Market Value / Realized Value - most reliable cycle indicator since 2011 |
+| 3 | **Stock-to-Flow Model** | 22% | Custom calculation required | [LookIntoBitcoin](https://www.lookintobitcoin.com/charts/) | Based on scarcity principle - predicted 2020-2021 cycle accurately |
+| 4 | **Long-Term Holder Supply** | 18% | `https://api.glassnode.com/v1/metrics/supply/lth_supply` | [Glassnode LTH Metrics](https://docs.glassnode.com/basic-api/endpoints/supply) | Coins held >155 days - tracks distribution vs accumulation phases |
+| 5 | **Puell Multiple** | 16% | `https://api.glassnode.com/v1/metrics/indicators/puell_multiple` | [LookIntoBitcoin Puell](https://www.lookintobitcoin.com/charts/)<br>[CoinMarketCap](https://coinmarketcap.com/charts/crypto-market-cycle-indicators/) | Daily coin issuance value / 365-day MA - excellent cycle timing |
+| 6 | **NVT Ratio** | 13% | `https://api.glassnode.com/v1/metrics/indicators/nvt` | [Glassnode NVT](https://docs.glassnode.com/basic-api/endpoints/indicators) | Network Value to Transactions - "Bitcoin's P/E Ratio" |
+| 7 | **Bitcoin ETF Flows** | 15% | Custom tracking required | [Bloomberg ETF Data](https://www.bloomberg.com/markets/etfs)<br>[ETF.com](https://www.etf.com/) | Track IBIT, FBTC, ARKB, etc. - critical for institutional adoption |
+| 8 | **Exchange Reserves** | 12% | `https://api.glassnode.com/v1/metrics/supply/exchange_balance` | [Glassnode Exchange](https://docs.glassnode.com/basic-api/endpoints/supply) | Bitcoin held on exchanges - supply shock indicator |
+| 9 | **Miner Position Index** | 10% | `https://api.glassnode.com/v1/metrics/indicators/mpi` | [Glassnode MPI](https://docs.glassnode.com/basic-api/endpoints/indicators) | Ratio of miner outflows to revenue - leading price indicator |
+| 10 | **Fear & Greed Index** | 8% | `https://api.alternative.me/fng/` | [Alternative.me](https://alternative.me/crypto/fear-and-greed-index/)<br>[Python Wrapper](https://github.com/rhettre/fear-and-greed-crypto) | Contrarian sentiment indicator - buy fear, sell greed |
+| 11 | **Bitcoin Dominance** | 7% | `https://api.coingecko.com/api/v3/global` | [CoinGecko API](https://docs.coingecko.com/reference/global) | BTC market cap / total crypto market cap - altseason timing |
+| 12 | **Funding Rates** | 6% | `https://api.coingecko.com/api/v3/derivatives` | [CoinGecko Derivatives](https://docs.coingecko.com/reference/derivatives_exchanges)<br>[Binance API](https://binance-docs.github.io/apidocs/spot/en/) | Perpetual futures funding rates - leverage indicator |
+| 13 | **Coinbase Premium** | 5% | Custom calculation required | [CoinbasePro API](https://docs.cloud.coinbase.com/exchange/docs) | Coinbase price vs other exchanges - US institutional demand |
+| 14 | **Rainbow Chart** | 4% | Custom calculation required | [Bitcoin Magazine Pro](https://www.bitcoinmagazinepro.com/charts/bitcoin-rainbow-chart/) | Logarithmic growth curve with sentiment bands |
+| 15 | **Hash Ribbons** | 3% | `https://api.glassnode.com/v1/metrics/mining/hash_rate_ma` | [LookIntoBitcoin Hash](https://www.lookintobitcoin.com/charts/) | Mining hash rate moving averages - miner capitulation signal |
