@@ -51,10 +51,12 @@ export function CompositeScore({
   const rotation = (score / 100) * 180 - 90
 
   return (
-    <Card className="bg-discord-bg-secondary border-discord-border shadow-discord-lg">
-      <CardHeader>
-        <CardTitle className="text-2xl text-center text-discord-text-primary">
+    <Card className="bg-discord-bg-secondary/95 border-2 border-discord-blurple/30 shadow-2xl">
+      <CardHeader className="border-b border-discord-border">
+        <CardTitle className="text-2xl text-center text-discord-text-primary flex items-center justify-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-discord-green animate-pulse" />
           Bitcoin Cycle Composite Score
+          <div className="w-2 h-2 rounded-full bg-discord-green animate-pulse" />
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">

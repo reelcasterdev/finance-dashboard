@@ -34,10 +34,12 @@ export function MarketOverview({ bitcoinData }: MarketOverviewProps) {
   }
 
   return (
-    <Card className="bg-discord-bg-secondary border-discord-border shadow-discord-lg">
-      <CardHeader>
+    <Card className="bg-discord-bg-secondary/95 border-2 border-discord-blurple/20 shadow-xl">
+      <CardHeader className="border-b border-discord-border bg-discord-bg-tertiary/50">
         <CardTitle className="text-xl text-discord-text-primary flex items-center gap-2">
-          <Activity className="w-5 h-5 text-discord-blurple" />
+          <div className="p-2 bg-discord-blurple/20 rounded-lg">
+            <Activity className="w-5 h-5 text-discord-blurple" />
+          </div>
           Market Overview
         </CardTitle>
       </CardHeader>

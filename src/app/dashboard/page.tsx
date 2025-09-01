@@ -4,24 +4,28 @@ import { useState, useEffect } from 'react'
 import { CompositeScore } from '@/components/dashboard/composite-score'
 import { MarketOverview } from '@/components/dashboard/market-overview'
 import { IndicatorCard } from '@/components/indicators/indicator-card'
+import { Badge } from '@/components/ui/badge'
 import { calculateCompositeScore } from '@/lib/indicators/composite'
 import { INDICATOR_WEIGHTS } from '@/lib/indicators/weights'
 import { useAllIndicators } from '@/lib/hooks/use-indicators'
 import { useEnhancedIndicators } from '@/lib/hooks/use-enhanced-indicators'
+import { useNetworkIndicators } from '@/lib/hooks/use-network-indicators'
 import { RefreshCw } from 'lucide-react'
 
 export default function DashboardPage() {
   const basicIndicators = useAllIndicators()
   const enhancedIndicators = useEnhancedIndicators()
+  const networkIndicators = useNetworkIndicators()
   
-  // Merge indicators from both sources
+  // Merge indicators from all sources
   const indicators = new Map([
     ...basicIndicators.indicators,
     ...enhancedIndicators.indicators,
+    ...networkIndicators.indicators,
   ])
   
-  const isLoading = basicIndicators.isLoading || enhancedIndicators.isLoading
-  const error = basicIndicators.error || enhancedIndicators.error
+  const isLoading = basicIndicators.isLoading || enhancedIndicators.isLoading || networkIndicators.isLoading
+  const error = basicIndicators.error || enhancedIndicators.error || networkIndicators.error
   
   const [compositeScore, setCompositeScore] = useState({
     overall: 50,
@@ -54,16 +58,28 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-discord-bg-primary p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen relative p-4 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-8 relative z-10">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-discord-text-primary">
+        <div className="text-center space-y-2 py-8">
+          <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-discord-blurple via-discord-fuchsia to-discord-blurple animate-pulse">
             Bitcoin Peak Indicator Dashboard
           </h1>
-          <p className="text-discord-text-secondary">
+          <p className="text-discord-text-secondary text-lg">
             Multi-indicator analysis for Bitcoin cycle peak detection
           </p>
+          <div className="flex justify-center gap-4 pt-4">
+            <Badge className="bg-discord-green/20 text-discord-green border border-discord-green/30">
+              <div className="w-2 h-2 rounded-full bg-discord-green animate-pulse mr-1" />
+              Live Data
+            </Badge>
+            <Badge className="bg-discord-blurple/20 text-discord-blurple border border-discord-blurple/30">
+              15 Indicators
+            </Badge>
+            <Badge className="bg-discord-fuchsia/20 text-discord-fuchsia border border-discord-fuchsia/30">
+              Auto Refresh
+            </Badge>
+          </div>
         </div>
 
         {/* Market Overview */}
@@ -99,6 +115,8 @@ export default function DashboardPage() {
                       weight={weight.weight}
                       confidence={0}
                       description={weight.description}
+                      dataSource={weight.dataSource}
+                      isLive={weight.isLive}
                     />
                   )
                 }
@@ -112,6 +130,8 @@ export default function DashboardPage() {
                     confidence={indicator.confidence}
                     description={weight.description}
                     lastUpdate={new Date()}
+                    dataSource={weight.dataSource}
+                    isLive={weight.isLive}
                   />
                 )
               })}
@@ -136,6 +156,8 @@ export default function DashboardPage() {
                       weight={weight.weight}
                       confidence={0}
                       description={weight.description}
+                      dataSource={weight.dataSource}
+                      isLive={weight.isLive}
                     />
                   )
                 }
@@ -149,6 +171,8 @@ export default function DashboardPage() {
                     confidence={indicator.confidence}
                     description={weight.description}
                     lastUpdate={new Date()}
+                    dataSource={weight.dataSource}
+                    isLive={weight.isLive}
                   />
                 )
               })}
@@ -173,6 +197,8 @@ export default function DashboardPage() {
                       weight={weight.weight}
                       confidence={0}
                       description={weight.description}
+                      dataSource={weight.dataSource}
+                      isLive={weight.isLive}
                     />
                   )
                 }
@@ -186,6 +212,8 @@ export default function DashboardPage() {
                     confidence={indicator.confidence}
                     description={weight.description}
                     lastUpdate={new Date()}
+                    dataSource={weight.dataSource}
+                    isLive={weight.isLive}
                   />
                 )
               })}
@@ -210,6 +238,8 @@ export default function DashboardPage() {
                       weight={weight.weight}
                       confidence={0}
                       description={weight.description}
+                      dataSource={weight.dataSource}
+                      isLive={weight.isLive}
                     />
                   )
                 }
@@ -223,6 +253,8 @@ export default function DashboardPage() {
                     confidence={indicator.confidence}
                     description={weight.description}
                     lastUpdate={new Date()}
+                    dataSource={weight.dataSource}
+                    isLive={weight.isLive}
                   />
                 )
               })}

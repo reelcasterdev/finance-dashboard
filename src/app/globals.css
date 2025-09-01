@@ -47,8 +47,67 @@
 }
 
 body {
-  background: var(--discord-bg-primary);
+  background: #1a1b1e;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(88, 101, 242, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(235, 69, 158, 0.1) 0%, transparent 40%),
+    radial-gradient(circle at 40% 20%, rgba(87, 242, 135, 0.1) 0%, transparent 40%);
+  background-attachment: fixed;
   color: var(--discord-text-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   min-height: 100vh;
+  position: relative;
+}
+
+/* Subtle pattern overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255, 255, 255, 0.01) 35px, rgba(255, 255, 255, 0.01) 70px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Glass morphism base */
+.glass {
+  background: rgba(47, 49, 54, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Glow effects */
+.glow-blue {
+  box-shadow: 0 0 20px rgba(88, 101, 242, 0.3);
+}
+
+.glow-green {
+  box-shadow: 0 0 20px rgba(87, 242, 135, 0.3);
+}
+
+.glow-red {
+  box-shadow: 0 0 20px rgba(237, 66, 69, 0.3);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #5865F2 0%, #EB459E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Pulse animation */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
