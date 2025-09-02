@@ -3,22 +3,22 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 shadow-sm",
+  "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-all",
   {
     variants: {
       variant: {
         default:
-          "bg-discord-blurple text-white hover:bg-discord-blurple/90 shadow-discord-blurple/25",
+          "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-700/10",
         secondary:
-          "bg-discord-bg-tertiary text-discord-text-secondary hover:bg-discord-bg-tertiary/80 border border-discord-border",
+          "bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10",
         destructive:
-          "bg-discord-red text-white hover:bg-discord-red/90 shadow-discord-red/25",
+          "bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/10",
         success:
-          "bg-discord-green text-discord-bg-tertiary hover:bg-discord-green/90 shadow-discord-green/25",
+          "bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20",
         warning:
-          "bg-discord-yellow text-discord-bg-tertiary hover:bg-discord-yellow/90 shadow-discord-yellow/25",
+          "bg-amber-50 text-amber-800 ring-1 ring-inset ring-amber-600/20",
         outline:
-          "border border-discord-border text-discord-text-primary hover:bg-discord-bg-tertiary/50",
+          "text-gray-700 ring-1 ring-inset ring-gray-300",
       },
     },
     defaultVariants: {

@@ -3,6 +3,21 @@ import axios from 'axios';
 const BLOCKCHAIN_BASE_URL = 'https://blockchain.info';
 const BLOCKCHAIN_API_URL = 'https://api.blockchain.info';
 
+interface BlockchainStats {
+  marketPriceUsd: number;
+  hashRate: number;
+  totalFeesBtc: number;
+  nTx: number;
+  nBlocksMined: number;
+  minutesBetweenBlocks: number;
+  totalBc: number;
+  estimatedTransactionVolume: number;
+  minersRevenue: number;
+  difficulty: number;
+  unconfirmedTxCount?: number;
+  dailyTransactions?: number;
+}
+
 export class BlockchainInfoClient {
   private client;
   private apiClient;
@@ -133,24 +148,24 @@ export class BlockchainInfoClient {
   }
 
   // Calculate network health score
-  calculateNetworkHealth(stats: any) {
+  calculateNetworkHealth(stats: BlockchainStats & { hashRate30dAvg?: number; difficulty30dAvg?: number }) {
     // High hash rate + high difficulty + normal mempool = healthy network
     let healthScore = 50; // Base score
     
     // Hash rate trend (compare to 30-day average)
-    if (stats.hashRate > stats.hashRate30dAvg) {
+    if (stats.hashRate30dAvg && stats.hashRate > stats.hashRate30dAvg) {
       healthScore += 20;
     }
     
     // Mempool congestion (lower is better)
-    if (stats.unconfirmedTxCount < 5000) {
+    if (stats.unconfirmedTxCount !== undefined && stats.unconfirmedTxCount < 5000) {
       healthScore += 15;
-    } else if (stats.unconfirmedTxCount > 20000) {
+    } else if (stats.unconfirmedTxCount !== undefined && stats.unconfirmedTxCount > 20000) {
       healthScore -= 15;
     }
     
     // Transaction volume (higher indicates more usage)
-    if (stats.dailyTransactions > 300000) {
+    if (stats.dailyTransactions !== undefined && stats.dailyTransactions > 300000) {
       healthScore += 15;
     }
     

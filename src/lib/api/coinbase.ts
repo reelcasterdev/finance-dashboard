@@ -36,7 +36,7 @@ export class CoinbaseClient {
     return signature;
   }
 
-  private getHeaders(method: string, path: string, body?: any): any {
+  private getHeaders(method: string, path: string, body?: unknown): Record<string, string> {
     const timestamp = Math.floor(Date.now() / 1000).toString();
     const bodyStr = body ? JSON.stringify(body) : '';
     const signature = this.generateSignature(timestamp, method, path, bodyStr);
@@ -169,21 +169,19 @@ export class CoinbaseClient {
       const path = `/products/BTC-USD/book?level=${level}`;
       const response = await this.proClient.get(path);
       
-      const bids = response.data.bids.map((bid: any) => ({
+      const bids = response.data.bids.map((bid: [string, string]) => ({
         price: parseFloat(bid[0]),
         size: parseFloat(bid[1]),
-        numOrders: bid[2] ? parseInt(bid[2]) : undefined,
       }));
       
-      const asks = response.data.asks.map((ask: any) => ({
+      const asks = response.data.asks.map((ask: [string, string]) => ({
         price: parseFloat(ask[0]),
         size: parseFloat(ask[1]),
-        numOrders: ask[2] ? parseInt(ask[2]) : undefined,
       }));
       
       // Calculate bid/ask ratio for market sentiment
-      const totalBidVolume = bids.reduce((sum: number, bid: any) => sum + bid.size, 0);
-      const totalAskVolume = asks.reduce((sum: number, ask: any) => sum + ask.size, 0);
+      const totalBidVolume = bids.reduce((sum: number, bid: { size: number }) => sum + bid.size, 0);
+      const totalAskVolume = asks.reduce((sum: number, ask: { size: number }) => sum + ask.size, 0);
       const bidAskRatio = totalBidVolume / totalAskVolume;
       
       return {
@@ -211,7 +209,7 @@ export class CoinbaseClient {
       const path = `/products/BTC-USD/trades?limit=${limit}`;
       const response = await this.proClient.get(path);
       
-      const trades = response.data.map((trade: any) => ({
+      const trades = response.data.map((trade: { price: string; size: string; time: string; side: string }) => ({
         time: new Date(trade.time),
         price: parseFloat(trade.price),
         size: parseFloat(trade.size),
@@ -220,12 +218,12 @@ export class CoinbaseClient {
       
       // Calculate buy/sell pressure
       const buyVolume = trades
-        .filter((t: any) => t.side === 'buy')
-        .reduce((sum: number, t: any) => sum + t.size, 0);
+        .filter((t: { side: string }) => t.side === 'buy')
+        .reduce((sum: number, t: { size: number }) => sum + t.size, 0);
       
       const sellVolume = trades
-        .filter((t: any) => t.side === 'sell')
-        .reduce((sum: number, t: any) => sum + t.size, 0);
+        .filter((t: { side: string }) => t.side === 'sell')
+        .reduce((sum: number, t: { size: number }) => sum + t.size, 0);
       
       return {
         trades: trades.slice(0, 20), // Last 20 trades

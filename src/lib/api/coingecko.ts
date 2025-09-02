@@ -70,7 +70,7 @@ export class CoinGeckoClient {
   async getFundingRates() {
     try {
       const response = await this.client.get('/derivatives/exchanges');
-      const binanceData = response.data.find((exchange: any) => 
+      const binanceData = response.data.find((exchange: { name: string; open_interest_btc?: number; trade_volume_24h_btc?: number }) => 
         exchange.name.toLowerCase() === 'binance (futures)'
       );
       return {
@@ -150,7 +150,7 @@ export class CoinGeckoClient {
   async getTrendingCoins() {
     try {
       const response = await this.client.get('/search/trending');
-      return response.data.coins.map((coin: any) => ({
+      return response.data.coins.map((coin: { item: { id: string; symbol: string; name: string; market_cap_rank: number; price_btc: number } }) => ({
         id: coin.item.id,
         name: coin.item.name,
         symbol: coin.item.symbol,
@@ -172,7 +172,7 @@ export class CoinGeckoClient {
         },
       });
       
-      return response.data.map((exchange: any) => ({
+      return response.data.map((exchange: { id: string; name: string; trade_volume_24h_btc: { [key: string]: number }; trust_score: number; year_established: number }) => ({
         id: exchange.id,
         name: exchange.name,
         btcVolume24h: exchange.trade_volume_24h_btc,
@@ -198,7 +198,7 @@ export class CoinGeckoClient {
       });
       
       const binanceTicker = response.data.tickers.find(
-        (ticker: any) => ticker.base === 'BTC' && ticker.target === 'USDT'
+        (ticker: { base: string; target: string; last: number; volume: number }) => ticker.base === 'BTC' && ticker.target === 'USDT'
       );
       
       return binanceTicker ? binanceTicker.last : null;

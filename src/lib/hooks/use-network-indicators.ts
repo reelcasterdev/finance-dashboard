@@ -32,7 +32,6 @@ export function useNetworkIndicators() {
       signal: data.hashRibbons.signal,
       confidence: data.hashRibbons.confidence,
       weight: 0.03,
-      description: data.hashRibbons.description,
     })
     
     // Network Activity (NVT Ratio proxy with real data!)
@@ -42,7 +41,6 @@ export function useNetworkIndicators() {
       signal: data.networkActivity.signal,
       confidence: data.networkActivity.confidence,
       weight: 0.13,
-      description: `NVT Ratio: ${data.networkActivity.nvtRatio.toFixed(1)}`,
     })
     
     // Fee Pressure indicator (new!)
@@ -52,7 +50,6 @@ export function useNetworkIndicators() {
       signal: data.fees.pressure.signal,
       confidence: data.fees.pressure.confidence,
       weight: 0.05,
-      description: data.fees.pressure.description,
     })
     
     // Network Congestion indicator (new!)
@@ -62,7 +59,6 @@ export function useNetworkIndicators() {
       signal: data.mempool.congestion.signal,
       confidence: 60,
       weight: 0.05,
-      description: `Congestion: ${data.mempool.congestion.level}`,
     })
     
     // Miner Revenue indicator
@@ -72,7 +68,6 @@ export function useNetworkIndicators() {
       signal: data.minersRevenue > 50000000 ? 'sell' : 'buy',
       confidence: 55,
       weight: 0.04,
-      description: `Miner Revenue: $${(data.minersRevenue / 1000000).toFixed(1)}M`,
     })
     
     // Difficulty Adjustment indicator
@@ -83,7 +78,6 @@ export function useNetworkIndicators() {
       signal: diffChange > 10 ? 'sell' : diffChange < -10 ? 'buy' : 'neutral',
       confidence: Math.min(Math.abs(diffChange) * 3, 80),
       weight: 0.03,
-      description: `Diff change: ${diffChange.toFixed(2)}%`,
     })
   }
   

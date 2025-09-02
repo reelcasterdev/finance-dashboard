@@ -28,7 +28,7 @@ export class AlternativeClient {
           classification: currentData.value_classification,
           timestamp: new Date(parseInt(currentData.timestamp) * 1000),
         },
-        history: historicalData.map((item: any) => ({
+        history: historicalData.map((item: { value: string; value_classification: string; timestamp: string }) => ({
           value: parseInt(item.value),
           classification: item.value_classification,
           timestamp: new Date(parseInt(item.timestamp) * 1000),

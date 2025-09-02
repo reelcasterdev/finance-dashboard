@@ -3,111 +3,125 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #36393F;
-  --foreground: #FFFFFF;
-  
-  /* Discord Colors */
-  --discord-blurple: #5865F2;
-  --discord-green: #57F287;
-  --discord-yellow: #FEE75C;
-  --discord-red: #ED4245;
-  --discord-fuchsia: #EB459E;
-  --discord-bg-primary: #36393F;
-  --discord-bg-secondary: #2F3136;
-  --discord-bg-tertiary: #202225;
-  --discord-text-primary: #FFFFFF;
-  --discord-text-secondary: #B9BBBE;
-  --discord-border: #40444B;
-  
-  /* shadcn/ui compatibility */
-  --card: #2F3136;
-  --card-foreground: #FFFFFF;
-  --primary: #5865F2;
-  --primary-foreground: #FFFFFF;
-  --secondary: #40444B;
-  --secondary-foreground: #B9BBBE;
-  --muted: #202225;
-  --muted-foreground: #72767D;
-  --accent: #EB459E;
-  --accent-foreground: #FFFFFF;
-  --destructive: #ED4245;
-  --destructive-foreground: #FFFFFF;
-  --border: #40444B;
-  --input: #40444B;
-  --ring: #5865F2;
-  --radius: 0.5rem;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --success: 158 64% 42%;
+    --success-foreground: 0 0% 100%;
+    
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 217 91% 60%;
+    
+    --radius: 0.75rem;
+    
+    --chart-1: 217 91% 60%;
+    --chart-2: 158 64% 42%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 0 84.2% 60.2%;
+    --chart-5: 262 83% 58%;
+  }
 }
 
 body {
-  background: #1a1b1e;
-  background-image: 
-    radial-gradient(circle at 20% 50%, rgba(88, 101, 242, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 80% 80%, rgba(235, 69, 158, 0.1) 0%, transparent 40%),
-    radial-gradient(circle at 40% 20%, rgba(87, 242, 135, 0.1) 0%, transparent 40%);
-  background-attachment: fixed;
-  color: var(--discord-text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  background: linear-gradient(to bottom, #ffffff, #f8f9fa);
   min-height: 100vh;
-  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Subtle pattern overlay */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: 
-    repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255, 255, 255, 0.01) 35px, rgba(255, 255, 255, 0.01) 70px);
-  pointer-events: none;
-  z-index: 0;
+/* Modern card styles */
+.card-shadow {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
 }
 
-/* Glass morphism base */
+.card-shadow-hover {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* Smooth transitions */
+* {
+  @apply transition-colors duration-200;
+}
+
+/* Glassmorphism effect */
 .glass {
-  background: rgba(47, 49, 54, 0.6);
+  background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Glow effects */
-.glow-blue {
-  box-shadow: 0 0 20px rgba(88, 101, 242, 0.3);
-}
-
-.glow-green {
-  box-shadow: 0 0 20px rgba(87, 242, 135, 0.3);
-}
-
-.glow-red {
-  box-shadow: 0 0 20px rgba(237, 66, 69, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #5865F2 0%, #EB459E 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  @apply bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent;
 }
 
-/* Pulse animation */
-@keyframes pulse-glow {
-  0%, 100% {
+/* Status colors */
+.status-buy {
+  @apply text-green-600 bg-green-50 border-green-200;
+}
+
+.status-sell {
+  @apply text-red-600 bg-red-50 border-red-200;
+}
+
+.status-neutral {
+  @apply text-amber-600 bg-amber-50 border-amber-200;
+}
+
+/* Animations */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
     opacity: 1;
   }
-  50% {
-    opacity: 0.5;
-  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
 }

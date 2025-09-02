@@ -39,7 +39,7 @@ export async function GET() {
     const mempoolData = mempoolStats.status === 'fulfilled' ? mempoolStats.value : {
       count: 0,
       vsize: 0,
-      totalFee: 0,
+      total_fee: 0,
       feeHistogram: [],
     };
 
@@ -87,16 +87,16 @@ export async function GET() {
       dailyTransactions: stats.nTx,
       transactionVolume: stats.estimatedTransactionVolume,
       nvtRatio: stats.estimatedTransactionVolume > 0 ? stats.marketPriceUsd * 21000000 / stats.estimatedTransactionVolume : 100,
-      signal: 'neutral' as const,
+      signal: 'neutral' as 'buy' | 'sell' | 'neutral',
       confidence: 60,
     };
 
     // Set NVT signal based on ratio
     if (networkActivity.nvtRatio > 150) {
-      networkActivity.signal = 'sell' as const;
+      networkActivity.signal = 'sell';
       networkActivity.confidence = 70;
     } else if (networkActivity.nvtRatio < 50) {
-      networkActivity.signal = 'buy' as const;
+      networkActivity.signal = 'buy';
       networkActivity.confidence = 70;
     }
 
@@ -111,7 +111,7 @@ export async function GET() {
       mempool: {
         size: mempoolData.count,
         vsize: mempoolData.vsize,
-        totalFee: mempoolData.totalFee,
+        totalFee: mempoolData.total_fee,
         congestion: congestion,
       },
       fees: {

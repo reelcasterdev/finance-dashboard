@@ -1,9 +1,9 @@
 "use client"
 
+import { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { TrendingUp, TrendingDown, Minus, Clock, Activity, Zap, BarChart2 } from "lucide-react"
+import { TrendingUp, TrendingDown, Minus, Clock, ArrowUp, ArrowDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface IndicatorCardProps {
@@ -31,176 +31,190 @@ export function IndicatorCard({
   dataSource,
   isLive = false
 }: IndicatorCardProps) {
-  const getSignalColor = () => {
+  const getSignalVariant = () => {
     switch (signal) {
       case 'buy':
-        return 'bg-discord-green text-discord-bg-tertiary'
+        return 'success'
       case 'sell':
-        return 'bg-discord-red text-white'
+        return 'destructive'
       default:
-        return 'bg-discord-yellow text-discord-bg-tertiary'
-    }
-  }
-
-  const getCardBorder = () => {
-    switch (signal) {
-      case 'buy':
-        return 'border-discord-green/30'
-      case 'sell':
-        return 'border-discord-red/30'
-      default:
-        return 'border-discord-yellow/30'
+        return 'warning'
     }
   }
 
   const getSignalIcon = () => {
     switch (signal) {
       case 'buy':
-        return <TrendingDown className="w-4 h-4" />
+        return <ArrowDown className="w-3 h-3" />
       case 'sell':
-        return <TrendingUp className="w-4 h-4" />
+        return <ArrowUp className="w-3 h-3" />
       default:
-        return <Minus className="w-4 h-4" />
+        return <Minus className="w-3 h-3" />
     }
-  }
-
-  const getProgressColor = () => {
-    if (confidence >= 80) return 'bg-discord-green'
-    if (confidence >= 60) return 'bg-discord-yellow'
-    if (confidence >= 40) return 'bg-discord-fuchsia'
-    return 'bg-discord-red'
   }
 
   const getValueColor = () => {
     switch (signal) {
       case 'buy':
-        return 'text-discord-green'
+        return 'text-green-600'
       case 'sell':
-        return 'text-discord-red'
+        return 'text-red-600'
       default:
-        return 'text-discord-yellow'
+        return 'text-amber-600'
     }
   }
 
-  // Generate mock trend data if not provided
-  const trendData = trend.length > 0 ? trend : Array.from({ length: 20 }, () => Math.random() * 100)
+  const getAccentColor = () => {
+    switch (signal) {
+      case 'buy':
+        return 'from-green-500/10 to-transparent'
+      case 'sell':
+        return 'from-red-500/10 to-transparent'
+      default:
+        return 'from-amber-500/10 to-transparent'
+    }
+  }
+
+  // Memoize trend data to prevent flickering
+  const trendData = useMemo(() => {
+    if (trend && trend.length > 0) return trend
+    // Generate stable mock data based on indicator name (for consistency)
+    const seed = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    return Array.from({ length: 20 }, (_, i) => 
+      50 + Math.sin((i + seed) * 0.5) * 20 + Math.cos((i + seed) * 0.3) * 10
+    )
+  }, [trend, name])
+
+  const trendDirection = useMemo(() => {
+    if (trendData.length >= 2) {
+      return trendData[trendData.length - 1] > trendData[trendData.length - 2] ? 'up' : 'down'
+    }
+    return 'neutral'
+  }, [trendData])
 
   return (
-    <Card className={cn(
-      "group relative overflow-hidden transition-all duration-300 hover:scale-[1.01] border-2",
-      getCardBorder()
-    )}>
-      {/* Background accent */}
+    <Card className="group relative overflow-hidden hover:shadow-lg transition-all duration-300">
+      {/* Subtle gradient accent */}
       <div className={cn(
-        "absolute inset-0 opacity-5",
-        signal === 'buy' ? 'bg-discord-green' : 
-        signal === 'sell' ? 'bg-discord-red' : 
-        'bg-discord-yellow'
+        "absolute inset-0 bg-gradient-to-br opacity-30",
+        getAccentColor()
       )} />
       
-      <CardHeader className="pb-3 relative z-10">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2 flex-1">
-            <div className={cn(
-              "p-1.5 rounded-lg",
-              signal === 'buy' ? 'bg-discord-green/20' : 
-              signal === 'sell' ? 'bg-discord-red/20' : 
-              'bg-discord-yellow/20'
-            )}>
-              <Activity className={cn(
-                "w-4 h-4",
-                signal === 'buy' ? 'text-discord-green' : 
-                signal === 'sell' ? 'text-discord-red' : 
-                'text-discord-yellow'
-              )} />
-            </div>
-            <div className="flex-1">
-              <CardTitle className="text-discord-text-primary text-sm font-semibold">
+      <CardHeader className="pb-2 relative">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-sm font-medium text-gray-900">
                 {name}
               </CardTitle>
-              {dataSource && (
-                <div className="flex items-center gap-1 mt-1">
-                  <Badge 
-                    variant="outline"
-                    className={cn(
-                      "text-xs px-1.5 py-0",
-                      isLive ? "border-discord-green/50 text-discord-green" : "border-discord-yellow/50 text-discord-yellow"
-                    )}
-                  >
-                    {isLive && <div className="w-1.5 h-1.5 rounded-full bg-discord-green animate-pulse mr-1" />}
-                    {dataSource}
-                  </Badge>
+              {isLive && (
+                <div className="flex items-center">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                 </div>
               )}
             </div>
+            {dataSource && (
+              <div className="flex items-center gap-2 mt-1">
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                  {dataSource}
+                </Badge>
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                  {(weight * 100).toFixed(0)}% weight
+                </Badge>
+              </div>
+            )}
           </div>
-          <Badge 
-            className="bg-discord-blurple text-white border-0 font-bold px-2 py-0.5"
-          >
-            {(weight * 100).toFixed(0)}%
-          </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4 relative z-10">
-        <div className="flex items-center justify-between">
-          <div className={cn("text-3xl font-bold", getValueColor())}>
-            {typeof value === 'number' ? value.toFixed(2) : value}
+
+      <CardContent className="space-y-3 relative">
+        <div className="flex items-end justify-between">
+          <div>
+            <div className={cn("text-2xl font-bold", getValueColor())}>
+              {typeof value === 'number' ? value.toFixed(2) : value}
+            </div>
+            {trendDirection !== 'neutral' && (
+              <div className="flex items-center gap-1 mt-1">
+                {trendDirection === 'up' ? (
+                  <TrendingUp className="w-3 h-3 text-green-500" />
+                ) : (
+                  <TrendingDown className="w-3 h-3 text-red-500" />
+                )}
+                <span className={cn(
+                  "text-xs font-medium",
+                  trendDirection === 'up' ? 'text-green-600' : 'text-red-600'
+                )}>
+                  {trendDirection === 'up' ? '+' : '-'}
+                  {Math.abs(((trendData[trendData.length - 1] - trendData[trendData.length - 2]) / trendData[trendData.length - 2]) * 100).toFixed(1)}%
+                </span>
+              </div>
+            )}
           </div>
-          <Badge className={cn("flex items-center gap-1 shadow-lg", getSignalColor())}>
+          <Badge variant={getSignalVariant() as "default" | "destructive" | "outline" | "secondary"} className="flex items-center gap-1">
             {getSignalIcon()}
-            {signal.toUpperCase()}
+            <span className="uppercase text-[10px] font-semibold">{signal}</span>
           </Badge>
         </div>
 
-        {description && (
-          <p className="text-xs text-discord-text-secondary bg-discord-bg-tertiary/50 rounded p-2">
-            {description}
-          </p>
-        )}
-
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs">
-            <span className="text-discord-text-secondary">Confidence</span>
-            <span className="text-discord-text-primary font-semibold">{confidence}%</span>
-          </div>
-          <Progress 
-            value={confidence} 
-            className="h-2 bg-discord-bg-tertiary"
-            indicatorColor={getProgressColor()}
-          />
-        </div>
-
-        {/* Trend Chart */}
-        <div className="pt-2">
-          <div className="flex justify-between text-xs text-discord-text-secondary mb-1">
-            <span>Trend</span>
-            <span>Last 20</span>
-          </div>
-          <div className="h-12 flex items-end gap-0.5 bg-discord-bg-tertiary/30 rounded p-1">
-            {trendData.slice(-20).map((val, idx) => {
-              const height = (val / Math.max(...trendData)) * 100
-              const isLast = idx === trendData.length - 1
+        {/* Mini Sparkline Chart */}
+        <div className="h-8 flex items-end gap-[1px]">
+          {useMemo(() => {
+            const maxValue = Math.max(...trendData)
+            const minValue = Math.min(...trendData)
+            const range = maxValue - minValue || 1
+            
+            return trendData.slice(-20).map((val, idx) => {
+              const height = ((val - minValue) / range) * 100
+              const isRecent = idx >= 17 // Last 3 bars
               return (
                 <div
                   key={idx}
                   className={cn(
-                    "flex-1 rounded-t transition-all hover:opacity-80",
-                    signal === 'buy' ? 'bg-discord-green/50' : 
-                    signal === 'sell' ? 'bg-discord-red/50' : 
-                    'bg-discord-yellow/50',
-                    isLast && 'animate-pulse'
+                    "flex-1 rounded-t transition-all",
+                    signal === 'buy' 
+                      ? isRecent ? 'bg-green-400' : 'bg-green-200' 
+                      : signal === 'sell' 
+                      ? isRecent ? 'bg-red-400' : 'bg-red-200'
+                      : isRecent ? 'bg-amber-400' : 'bg-amber-200',
+                    "hover:opacity-80"
                   )}
-                  style={{ height: `${height}%` }}
+                  style={{ height: `${Math.max(height, 5)}%` }}
                 />
               )
-            })}
+            })
+          }, [trendData, signal])}
+        </div>
+
+        {/* Confidence Meter */}
+        <div className="space-y-1">
+          <div className="flex justify-between items-center">
+            <span className="text-xs text-gray-500">Confidence</span>
+            <span className="text-xs font-semibold text-gray-700">{confidence.toFixed(3)}%</span>
+          </div>
+          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div 
+              className={cn(
+                "h-full transition-all duration-500",
+                confidence >= 80 ? 'bg-green-500' :
+                confidence >= 60 ? 'bg-blue-500' :
+                confidence >= 40 ? 'bg-amber-500' :
+                'bg-red-500'
+              )}
+              style={{ width: `${confidence}%` }}
+            />
           </div>
         </div>
 
+        {description && (
+          <p className="text-xs text-gray-600 bg-gray-50 rounded-md p-2 line-clamp-2">
+            {description}
+          </p>
+        )}
+
         {lastUpdate && (
-          <div className="flex items-center gap-1 text-xs text-discord-text-secondary">
+          <div className="flex items-center gap-1 text-xs text-gray-400 pt-1 border-t border-gray-100">
             <Clock className="w-3 h-3" />
-            {new Date(lastUpdate).toLocaleTimeString()}
+            <span>{new Date(lastUpdate).toLocaleTimeString()}</span>
           </div>
         )}
       </CardContent>

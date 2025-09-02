@@ -45,7 +45,6 @@ export function calculatePiCycleTop(prices: PriceData[]): IndicatorResult {
   const ma111 = calculateSMA(priceValues, 111);
   const ma350x2 = calculateSMA(priceValues, 350) * 2;
   
-  const currentPrice = priceValues[priceValues.length - 1];
   const ratio = ma111 / ma350x2;
   
   let signal: 'buy' | 'neutral' | 'sell' = 'neutral';
@@ -105,7 +104,6 @@ export function calculateMVRV(marketCap: number, realizedCap: number): Indicator
 
 // Stock-to-Flow Model
 export function calculateStockToFlow(currentBlock: number): IndicatorResult {
-  const blocksPerYear = 52560; // Approximately 144 blocks/day * 365 days
   const currentSupply = 19000000; // Approximate current supply
   const yearlyProduction = (currentBlock < 840000) ? 328500 : 164250; // After halving
   

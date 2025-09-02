@@ -4,10 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { CoinGeckoClient } from '@/lib/api/coingecko'
 import { AlternativeClient } from '@/lib/api/alternative'
 import { 
-  calculatePiCycleTop, 
-  calculateMVRV, 
-  calculateStockToFlow,
-  calculatePuellMultiple 
+  calculatePiCycleTop
 } from '@/lib/indicators/calculations'
 import { IndicatorScore } from '@/lib/indicators/composite'
 
@@ -48,7 +45,7 @@ export function useFearGreedIndex() {
         signal,
         confidence: Math.abs(50 - data.current.value) * 2,
         history: data.history,
-      } as IndicatorScore & { history: any[] }
+      } as IndicatorScore & { history: Array<{ value: number; classification: string; timestamp: Date }> }
     },
     refetchInterval: REFRESH_INTERVAL * 5, // 5 minutes
   })
@@ -77,7 +74,6 @@ export function useAllIndicators() {
   const fearGreed = useFearGreedIndex()
   const dominance = useBitcoinDominance()
   const piCycle = usePiCycleIndicator()
-  const price = useBitcoinPrice()
   
   const indicators = new Map<string, IndicatorScore>()
   

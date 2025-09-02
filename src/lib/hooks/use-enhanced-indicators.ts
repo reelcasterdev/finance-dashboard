@@ -3,13 +3,6 @@
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { IndicatorScore } from '@/lib/indicators/composite'
-import { 
-  calculatePiCycleTop, 
-  calculateMVRV, 
-  calculateStockToFlow,
-  calculatePuellMultiple,
-  calculateRainbowBands
-} from '@/lib/indicators/calculations'
 
 const REFRESH_INTERVAL = 60000 // 1 minute
 
@@ -39,7 +32,6 @@ export function useCoinbasePremium() {
         signal: data.signal,
         confidence: Math.min(Math.abs(data.premium) * 20, 100),
         weight: 0.05,
-        description: `Premium: ${data.premium.toFixed(2)}%`,
       } as IndicatorScore
     },
     refetchInterval: REFRESH_INTERVAL,
@@ -65,7 +57,6 @@ export function useMarketDepth() {
         signal,
         confidence: data.marketPressure.buyPressure,
         weight: 0.08,
-        description: `Bid/Ask: ${data.marketPressure.bidAskRatio.toFixed(2)}`,
         orderBook: data.orderBook,
         trades: data.trades,
       }
@@ -88,7 +79,6 @@ export function useFundingRates() {
         signal: data.signal,
         confidence: data.confidence,
         weight: 0.06,
-        description: `Open Interest: ${(data.openInterest / 1000).toFixed(1)}K BTC`,
       } as IndicatorScore
     },
     refetchInterval: REFRESH_INTERVAL * 2,
@@ -122,7 +112,6 @@ export function useATHDistance(currentPrice: number, ath: number) {
     signal,
     confidence,
     weight: 0.10,
-    description: `${(100 - distance).toFixed(1)}% of ATH`,
   } as IndicatorScore
 }
 
@@ -148,7 +137,6 @@ export function useVolumeTrend(volume24h: number, volume30d: number) {
     signal,
     confidence,
     weight: 0.08,
-    description: `Volume ${volumeRatio > 1 ? '↑' : '↓'} ${(volumeRatio * 100).toFixed(0)}%`,
   } as IndicatorScore
 }
 
@@ -158,6 +146,13 @@ export function useEnhancedIndicators() {
   const coinbasePremium = useCoinbasePremium()
   const marketDepth = useMarketDepth()
   const fundingRates = useFundingRates()
+  
+  // Always call hooks unconditionally
+  const currentPrice = bitcoinData.data?.marketData?.currentPrice ?? 0
+  const ath = bitcoinData.data?.marketData?.ath ?? 0
+  const totalVolume = bitcoinData.data?.marketData?.totalVolume ?? 0
+  const athIndicator = useATHDistance(currentPrice, ath)
+  const volumeIndicator = useVolumeTrend(totalVolume, totalVolume * 30)
   
   const indicators = new Map<string, IndicatorScore>()
   
@@ -179,11 +174,9 @@ export function useEnhancedIndicators() {
     const md = bitcoinData.data.marketData
     
     // ATH Distance
-    const athIndicator = useATHDistance(md.currentPrice, md.ath)
     indicators.set('ath-distance', athIndicator)
     
     // Volume Trend
-    const volumeIndicator = useVolumeTrend(md.totalVolume, md.totalVolume * 30)
     indicators.set('volume-trend', volumeIndicator)
     
     // Price momentum indicators
@@ -194,7 +187,6 @@ export function useEnhancedIndicators() {
               md.priceChangePercentage30d < -20 ? 'buy' as const : 'neutral' as const,
       confidence: Math.min(Math.abs(md.priceChangePercentage30d) * 2, 100),
       weight: 0.07,
-      description: `30d Change: ${md.priceChangePercentage30d.toFixed(1)}%`,
     }
     indicators.set('momentum-30d', momentum30d)
     
@@ -205,7 +197,6 @@ export function useEnhancedIndicators() {
       signal: 'neutral' as const,
       confidence: 60,
       weight: 0.22,
-      description: `S2F Ratio: ${(md.circulatingSupply / 328500).toFixed(1)}`,
     }
     indicators.set('s2f', s2fIndicator)
   }

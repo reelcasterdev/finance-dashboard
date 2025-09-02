@@ -35,7 +35,7 @@ export class MempoolSpaceClient {
       return {
         count: response.data.count || 0,
         vsize: response.data.vsize || 0,
-        totalFee: response.data.total_fee || 0,
+        total_fee: response.data.total_fee || 0,
         feeHistogram: response.data.fee_histogram || [],
       };
     } catch (error) {
@@ -44,7 +44,7 @@ export class MempoolSpaceClient {
       return {
         count: 0,
         vsize: 0,
-        totalFee: 0,
+        total_fee: 0,
         feeHistogram: [],
       };
     }
@@ -54,7 +54,7 @@ export class MempoolSpaceClient {
   async getRecentBlocks() {
     try {
       const response = await this.client.get('/v1/blocks');
-      return response.data.slice(0, 10).map((block: any) => ({
+      return response.data.slice(0, 10).map((block: { id: string; height: number; timestamp: number; tx_count: number; size: number; weight: number; difficulty: number; fee?: number }) => ({
         id: block.id,
         height: block.height,
         timestamp: block.timestamp,
@@ -118,7 +118,7 @@ export class MempoolSpaceClient {
   }
 
   // Calculate fee pressure indicator
-  calculateFeePressure(fees: any) {
+  calculateFeePressure(fees: { fastestFee: number; halfHourFee: number; hourFee: number }) {
     // High fees indicate high demand and potential market top
     const avgFee = (fees.fastestFee + fees.halfHourFee + fees.hourFee) / 3;
     
@@ -151,7 +151,7 @@ export class MempoolSpaceClient {
   }
 
   // Calculate network congestion score
-  calculateCongestion(mempoolStats: any, fees: any) {
+  calculateCongestion(mempoolStats: { count: number; vsize: number; total_fee: number }, fees: { fastestFee: number; halfHourFee: number; hourFee: number }) {
     let congestionScore = 0;
     
     // Factor 1: Transaction count in mempool
