@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { CompositeScore } from '@/components/dashboard/composite-score'
 import { MarketOverview } from '@/components/dashboard/market-overview'
 import { IndicatorCard } from '@/components/indicators/indicator-card'
@@ -10,6 +10,7 @@ import { INDICATOR_WEIGHTS } from '@/lib/indicators/weights'
 import { useAllIndicators } from '@/lib/hooks/use-indicators'
 import { useEnhancedIndicators } from '@/lib/hooks/use-enhanced-indicators'
 import { useNetworkIndicators } from '@/lib/hooks/use-network-indicators'
+import { useFreeIndicators } from '@/lib/hooks/use-free-indicators'
 import { Activity, BarChart3, TrendingUp, Zap } from 'lucide-react'
 
 
@@ -17,30 +18,51 @@ export default function DashboardPage() {
   const basicIndicators = useAllIndicators()
   const enhancedIndicators = useEnhancedIndicators()
   const networkIndicators = useNetworkIndicators()
+  const freeIndicators = useFreeIndicators()
   
-  // Merge indicators from all sources - use useMemo to stabilize the reference
-  const indicators = useMemo(() => new Map([
-    ...basicIndicators.indicators,
-    ...enhancedIndicators.indicators,
-    ...networkIndicators.indicators,
-  ]), [basicIndicators.indicators, enhancedIndicators.indicators, networkIndicators.indicators])
-  
-  const isLoading = basicIndicators.isLoading || enhancedIndicators.isLoading || networkIndicators.isLoading
-  
-  const [compositeScore, setCompositeScore] = useState<CompositeScoreType>({
-    overall: 50,
-    signal: 'neutral',
-    peakProbability: 50,
-    weightedScores: [],
-    lastUpdate: new Date(),
-  })
-
-  useEffect(() => {
-    if (indicators.size > 0) {
-      const score = calculateCompositeScore(indicators)
-      setCompositeScore(score)
+  // Merge indicators from all sources
+  const indicators = useMemo(() => {
+    const merged = new Map()
+    // Only merge if not loading to ensure stable data
+    if (!basicIndicators.isLoading) {
+      basicIndicators.indicators.forEach((value, key) => merged.set(key, value))
     }
-  }, [indicators])
+    if (!enhancedIndicators.isLoading) {
+      enhancedIndicators.indicators.forEach((value, key) => merged.set(key, value))
+    }
+    if (!networkIndicators.isLoading) {
+      networkIndicators.indicators.forEach((value, key) => merged.set(key, value))
+    }
+    if (!freeIndicators.isLoading) {
+      freeIndicators.indicators.forEach((value, key) => merged.set(key, value))
+    }
+    return merged
+  }, [
+    basicIndicators.isLoading,
+    enhancedIndicators.isLoading,
+    networkIndicators.isLoading,
+    freeIndicators.isLoading,
+    basicIndicators.indicators,
+    enhancedIndicators.indicators,
+    networkIndicators.indicators,
+    freeIndicators.indicators
+  ])
+  
+  const isLoading = basicIndicators.isLoading || enhancedIndicators.isLoading || networkIndicators.isLoading || freeIndicators.isLoading
+  
+  // Calculate composite score directly without useEffect to avoid loops
+  const compositeScore = useMemo<CompositeScoreType>(() => {
+    if (indicators.size > 0 && !isLoading) {
+      return calculateCompositeScore(indicators)
+    }
+    return {
+      overall: 50,
+      signal: 'neutral',
+      peakProbability: 50,
+      weightedScores: [],
+      lastUpdate: new Date(),
+    }
+  }, [indicators, isLoading])
 
   if (isLoading) {
     return (
@@ -169,7 +191,7 @@ export default function DashboardPage() {
               Live Data
             </Badge>
             <Badge variant="secondary" className="px-3 py-1">
-              15 Indicators
+              24 Indicators
             </Badge>
             <Badge variant="secondary" className="px-3 py-1">
               Auto Refresh

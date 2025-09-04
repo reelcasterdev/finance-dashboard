@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { IndicatorScore } from '@/lib/indicators/composite'
+import { useMemo } from 'react'
 
 const REFRESH_INTERVAL = 60000 // 1 minute
 
@@ -154,52 +155,56 @@ export function useEnhancedIndicators() {
   const athIndicator = useATHDistance(currentPrice, ath)
   const volumeIndicator = useVolumeTrend(totalVolume, totalVolume * 30)
   
-  const indicators = new Map<string, IndicatorScore>()
-  
-  // Add all fetched indicators
-  if (coinbasePremium.data) {
-    indicators.set('coinbase-premium', coinbasePremium.data)
-  }
-  
-  if (marketDepth.data) {
-    indicators.set('market-depth', marketDepth.data)
-  }
-  
-  if (fundingRates.data) {
-    indicators.set('funding-rates', fundingRates.data)
-  }
-  
-  // Calculate derived indicators from market data
-  if (bitcoinData.data?.marketData) {
-    const md = bitcoinData.data.marketData
+  const indicators = useMemo(() => {
+    const map = new Map<string, IndicatorScore>()
     
-    // ATH Distance
-    indicators.set('ath-distance', athIndicator)
-    
-    // Volume Trend
-    indicators.set('volume-trend', volumeIndicator)
-    
-    // Price momentum indicators
-    const momentum30d = {
-      id: 'momentum-30d',
-      value: md.priceChangePercentage30d,
-      signal: md.priceChangePercentage30d > 20 ? 'sell' as const : 
-              md.priceChangePercentage30d < -20 ? 'buy' as const : 'neutral' as const,
-      confidence: Math.min(Math.abs(md.priceChangePercentage30d) * 2, 100),
-      weight: 0.07,
+    // Add all fetched indicators
+    if (coinbasePremium.data) {
+      map.set('coinbase-premium', coinbasePremium.data)
     }
-    indicators.set('momentum-30d', momentum30d)
     
-    // Supply metrics for S2F approximation
-    const s2fIndicator = {
-      id: 's2f',
-      value: md.circulatingSupply / (328500), // Annual production estimate
-      signal: 'neutral' as const,
-      confidence: 60,
-      weight: 0.22,
+    if (marketDepth.data) {
+      map.set('market-depth', marketDepth.data)
     }
-    indicators.set('s2f', s2fIndicator)
-  }
+    
+    if (fundingRates.data) {
+      map.set('funding-rates', fundingRates.data)
+    }
+    
+    // Calculate derived indicators from market data
+    if (bitcoinData.data?.marketData) {
+      const md = bitcoinData.data.marketData
+      
+      // ATH Distance
+      map.set('ath-distance', athIndicator)
+      
+      // Volume Trend
+      map.set('volume-trend', volumeIndicator)
+      
+      // Price momentum indicators
+      const momentum30d = {
+        id: 'momentum-30d',
+        value: md.priceChangePercentage30d,
+        signal: md.priceChangePercentage30d > 20 ? 'sell' as const : 
+                md.priceChangePercentage30d < -20 ? 'buy' as const : 'neutral' as const,
+        confidence: Math.min(Math.abs(md.priceChangePercentage30d) * 2, 100),
+        weight: 0.07,
+      }
+      map.set('momentum-30d', momentum30d)
+      
+      // Supply metrics for S2F approximation
+      const s2fIndicator = {
+        id: 's2f',
+        value: md.circulatingSupply / (328500), // Annual production estimate
+        signal: 'neutral' as const,
+        confidence: 60,
+        weight: 0.22,
+      }
+      map.set('s2f', s2fIndicator)
+    }
+    
+    return map
+  }, [bitcoinData.data, coinbasePremium.data, marketDepth.data, fundingRates.data, athIndicator, volumeIndicator])
   
   return {
     indicators,

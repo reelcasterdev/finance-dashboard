@@ -105,10 +105,14 @@ Alternative.me ┘
 
 ## 🔑 API Keys Configuration
 
+Create a `.env.local` file with:
+
 ```env
-COINGECKO_API_KEY=CG-iYoNMofVYgypjR2VwdaAa6zF
-COINBASE_API_KEY=23670705-582f-4474-855a-8b9bd176e97c
-COINBASE_API_SECRET=[configured]
+COINGECKO_API_KEY=your_coingecko_api_key
+COINBASE_API_KEY=your_coinbase_api_key
+COINBASE_API_SECRET=your_coinbase_api_secret
+ALPHA_VANTAGE_API_KEY=your_alpha_vantage_key
+AMBOSS_API_KEY=your_amboss_api_key
 ```
 
 ## 🚀 Usage

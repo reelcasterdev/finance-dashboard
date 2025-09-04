@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { IndicatorScore } from '@/lib/indicators/composite'
+import { useMemo } from 'react'
 
 const REFRESH_INTERVAL = 120000 // 2 minutes
 
@@ -20,66 +21,70 @@ export function useNetworkHealth() {
 export function useNetworkIndicators() {
   const networkHealth = useNetworkHealth()
   
-  const indicators = new Map<string, IndicatorScore>()
-  
-  if (networkHealth.data) {
-    const data = networkHealth.data
+  const indicators = useMemo(() => {
+    const map = new Map<string, IndicatorScore>()
     
-    // Hash Ribbons indicator (real data!)
-    indicators.set('hash-ribbons', {
-      id: 'hash-ribbons',
-      value: data.hashRibbons.hashRate,
-      signal: data.hashRibbons.signal,
-      confidence: data.hashRibbons.confidence,
-      weight: 0.03,
-    })
+    if (networkHealth.data) {
+      const data = networkHealth.data
+      
+      // Hash Ribbons indicator (real data!)
+      map.set('hash-ribbons', {
+        id: 'hash-ribbons',
+        value: data.hashRibbons.hashRate,
+        signal: data.hashRibbons.signal,
+        confidence: data.hashRibbons.confidence,
+        weight: 0.03,
+      })
+      
+      // Network Activity (NVT Ratio proxy with real data!)
+      map.set('nvt', {
+        id: 'nvt',
+        value: data.networkActivity.nvtRatio,
+        signal: data.networkActivity.signal,
+        confidence: data.networkActivity.confidence,
+        weight: 0.13,
+      })
+      
+      // Fee Pressure indicator (new!)
+      map.set('fee-pressure', {
+        id: 'fee-pressure',
+        value: data.fees.pressure.avgFee,
+        signal: data.fees.pressure.signal,
+        confidence: data.fees.pressure.confidence,
+        weight: 0.05,
+      })
+      
+      // Network Congestion indicator (new!)
+      map.set('network-congestion', {
+        id: 'network-congestion',
+        value: data.mempool.congestion.score,
+        signal: data.mempool.congestion.signal,
+        confidence: 60,
+        weight: 0.05,
+      })
+      
+      // Miner Revenue indicator
+      map.set('miner-revenue', {
+        id: 'miner-revenue',
+        value: data.minersRevenue,
+        signal: data.minersRevenue > 50000000 ? 'sell' : 'buy',
+        confidence: 55,
+        weight: 0.04,
+      })
+      
+      // Difficulty Adjustment indicator
+      const diffChange = data.difficulty.difficultyChange;
+      map.set('difficulty-adjustment', {
+        id: 'difficulty-adjustment',
+        value: diffChange,
+        signal: diffChange > 10 ? 'sell' : diffChange < -10 ? 'buy' : 'neutral',
+        confidence: Math.min(Math.abs(diffChange) * 3, 80),
+        weight: 0.03,
+      })
+    }
     
-    // Network Activity (NVT Ratio proxy with real data!)
-    indicators.set('nvt', {
-      id: 'nvt',
-      value: data.networkActivity.nvtRatio,
-      signal: data.networkActivity.signal,
-      confidence: data.networkActivity.confidence,
-      weight: 0.13,
-    })
-    
-    // Fee Pressure indicator (new!)
-    indicators.set('fee-pressure', {
-      id: 'fee-pressure',
-      value: data.fees.pressure.avgFee,
-      signal: data.fees.pressure.signal,
-      confidence: data.fees.pressure.confidence,
-      weight: 0.05,
-    })
-    
-    // Network Congestion indicator (new!)
-    indicators.set('network-congestion', {
-      id: 'network-congestion',
-      value: data.mempool.congestion.score,
-      signal: data.mempool.congestion.signal,
-      confidence: 60,
-      weight: 0.05,
-    })
-    
-    // Miner Revenue indicator
-    indicators.set('miner-revenue', {
-      id: 'miner-revenue',
-      value: data.minersRevenue,
-      signal: data.minersRevenue > 50000000 ? 'sell' : 'buy',
-      confidence: 55,
-      weight: 0.04,
-    })
-    
-    // Difficulty Adjustment indicator
-    const diffChange = data.difficulty.difficultyChange;
-    indicators.set('difficulty-adjustment', {
-      id: 'difficulty-adjustment',
-      value: diffChange,
-      signal: diffChange > 10 ? 'sell' : diffChange < -10 ? 'buy' : 'neutral',
-      confidence: Math.min(Math.abs(diffChange) * 3, 80),
-      weight: 0.03,
-    })
-  }
+    return map
+  }, [networkHealth.data])
   
   return {
     indicators,

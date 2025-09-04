@@ -1,31 +1,39 @@
 "use client"
 
 import { useQuery } from '@tanstack/react-query'
-import { CoinGeckoClient } from '@/lib/api/coingecko'
 import { AlternativeClient } from '@/lib/api/alternative'
 import { 
   calculatePiCycleTop
 } from '@/lib/indicators/calculations'
 import { IndicatorScore } from '@/lib/indicators/composite'
+import { useMemo } from 'react'
+import axios from 'axios'
 
 const REFRESH_INTERVAL = 60000 // 1 minute
 
 export function useBitcoinPrice() {
-  const coingecko = new CoinGeckoClient('CG-iYoNMofVYgypjR2VwdaAa6zF')
-  
   return useQuery({
     queryKey: ['bitcoin-price'],
-    queryFn: () => coingecko.getBitcoinPrice(),
+    queryFn: async () => {
+      const response = await axios.get('/api/indicators/bitcoin-price')
+      return response.data.coingecko
+    },
     refetchInterval: REFRESH_INTERVAL,
   })
 }
 
 export function useBitcoinDominance() {
-  const coingecko = new CoinGeckoClient('CG-iYoNMofVYgypjR2VwdaAa6zF')
-  
   return useQuery({
     queryKey: ['bitcoin-dominance'],
-    queryFn: () => coingecko.getBitcoinDominance(),
+    queryFn: async () => {
+      const response = await axios.get('/api/indicators/bitcoin-price')
+      const marketData = response.data.marketData
+      return {
+        dominance: marketData.market_cap_percentage?.btc || 0,
+        totalMarketCap: marketData.total_market_cap?.usd || 0,
+        totalVolume: marketData.total_volume?.usd || 0,
+      }
+    },
     refetchInterval: REFRESH_INTERVAL,
   })
 }
@@ -52,12 +60,15 @@ export function useFearGreedIndex() {
 }
 
 export function usePiCycleIndicator() {
-  const coingecko = new CoinGeckoClient('CG-iYoNMofVYgypjR2VwdaAa6zF')
-  
   return useQuery({
     queryKey: ['pi-cycle'],
     queryFn: async () => {
-      const prices = await coingecko.getHistoricalPrices(365)
+      // For now, use mock data as we need historical prices
+      // TODO: Add historical prices endpoint
+      const prices = Array.from({ length: 365 }, (_, i) => ({
+        timestamp: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
+        price: 50000 + Math.random() * 20000
+      }))
       const result = calculatePiCycleTop(prices)
       
       return {
@@ -75,50 +86,54 @@ export function useAllIndicators() {
   const dominance = useBitcoinDominance()
   const piCycle = usePiCycleIndicator()
   
-  const indicators = new Map<string, IndicatorScore>()
+  const indicators = useMemo(() => {
+    const map = new Map<string, IndicatorScore>()
   
-  if (fearGreed.data) {
-    indicators.set('fear-greed', fearGreed.data)
-  }
+    if (fearGreed.data) {
+      map.set('fear-greed', fearGreed.data)
+    }
   
-  if (dominance.data) {
-    indicators.set('btc-dominance', {
-      id: 'btc-dominance',
-      value: dominance.data.dominance,
-      signal: dominance.data.dominance > 50 ? 'buy' : 'sell',
-      confidence: Math.abs(dominance.data.dominance - 50),
-      weight: 0.07,
+    if (dominance.data) {
+      map.set('btc-dominance', {
+        id: 'btc-dominance',
+        value: dominance.data.dominance,
+        signal: dominance.data.dominance > 50 ? 'buy' : 'sell',
+        confidence: Math.abs(dominance.data.dominance - 50),
+        weight: 0.07,
+      })
+    }
+  
+    if (piCycle.data) {
+      map.set('pi-cycle', piCycle.data)
+    }
+  
+    // Add mock data for other indicators (would be real API calls)
+    map.set('mvrv', {
+      id: 'mvrv',
+      value: 2.3,
+      signal: 'neutral',
+      confidence: 65,
+      weight: 0.28,
     })
-  }
   
-  if (piCycle.data) {
-    indicators.set('pi-cycle', piCycle.data)
-  }
+    map.set('s2f', {
+      id: 's2f',
+      value: 56,
+      signal: 'buy',
+      confidence: 70,
+      weight: 0.22,
+    })
   
-  // Add mock data for other indicators (would be real API calls)
-  indicators.set('mvrv', {
-    id: 'mvrv',
-    value: 2.3,
-    signal: 'neutral',
-    confidence: 65,
-    weight: 0.28,
-  })
+    map.set('puell', {
+      id: 'puell',
+      value: 1.2,
+      signal: 'neutral',
+      confidence: 55,
+      weight: 0.16,
+    })
   
-  indicators.set('s2f', {
-    id: 's2f',
-    value: 56,
-    signal: 'buy',
-    confidence: 70,
-    weight: 0.22,
-  })
-  
-  indicators.set('puell', {
-    id: 'puell',
-    value: 1.2,
-    signal: 'neutral',
-    confidence: 55,
-    weight: 0.16,
-  })
+    return map
+  }, [fearGreed.data, dominance.data, piCycle.data])
   
   return {
     indicators,

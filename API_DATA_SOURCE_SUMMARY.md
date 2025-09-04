@@ -3,7 +3,7 @@
 ## 🟢 Live Data (Fully Implemented)
 
 ### CoinGecko API
-**API Key:** `CG-iYoNMofVYgypjR2VwdaAa6zF`
+**API Key:** Set via `COINGECKO_API_KEY` environment variable
 
 | Indicator | Data Retrieved | Update Frequency |
 |-----------|---------------|------------------|
@@ -20,8 +20,8 @@
 | **Price Momentum** | 7d, 30d, 1y price changes | 1 minute |
 
 ### Coinbase API
-**API Key:** `23670705-582f-4474-855a-8b9bd176e97c`
-**API Secret:** Configured in `.env.local`
+**API Key:** Set via `COINBASE_API_KEY` environment variable
+**API Secret:** Set via `COINBASE_API_SECRET` environment variable
 
 | Indicator | Data Retrieved | Update Frequency |
 |-----------|---------------|------------------|
