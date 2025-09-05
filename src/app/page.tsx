@@ -11,6 +11,8 @@ import { useAllIndicators } from '@/lib/hooks/use-indicators'
 import { useEnhancedIndicators } from '@/lib/hooks/use-enhanced-indicators'
 import { useNetworkIndicators } from '@/lib/hooks/use-network-indicators'
 import { useFreeIndicators } from '@/lib/hooks/use-free-indicators'
+import { useBitcoinMagazineIndicators } from '@/lib/hooks/use-bitcoin-magazine'
+import { useAdvancedIndicators } from '@/lib/hooks/use-advanced-indicators'
 import { Activity, BarChart3, TrendingUp, Zap } from 'lucide-react'
 
 
@@ -19,6 +21,8 @@ export default function DashboardPage() {
   const enhancedIndicators = useEnhancedIndicators()
   const networkIndicators = useNetworkIndicators()
   const freeIndicators = useFreeIndicators()
+  const bitcoinMagazineIndicators = useBitcoinMagazineIndicators()
+  const advancedIndicators = useAdvancedIndicators()
   
   // Merge indicators from all sources
   const indicators = useMemo(() => {
@@ -36,19 +40,29 @@ export default function DashboardPage() {
     if (!freeIndicators.isLoading) {
       freeIndicators.indicators.forEach((value, key) => merged.set(key, value))
     }
+    if (!bitcoinMagazineIndicators.isLoading) {
+      bitcoinMagazineIndicators.indicators.forEach((value, key) => merged.set(key, value))
+    }
+    if (!advancedIndicators.isLoading) {
+      advancedIndicators.indicators.forEach((value, key) => merged.set(key, value))
+    }
     return merged
   }, [
     basicIndicators.isLoading,
     enhancedIndicators.isLoading,
     networkIndicators.isLoading,
     freeIndicators.isLoading,
+    bitcoinMagazineIndicators.isLoading,
+    advancedIndicators.isLoading,
     basicIndicators.indicators,
     enhancedIndicators.indicators,
     networkIndicators.indicators,
-    freeIndicators.indicators
+    freeIndicators.indicators,
+    bitcoinMagazineIndicators.indicators,
+    advancedIndicators.indicators
   ])
   
-  const isLoading = basicIndicators.isLoading || enhancedIndicators.isLoading || networkIndicators.isLoading || freeIndicators.isLoading
+  const isLoading = basicIndicators.isLoading || enhancedIndicators.isLoading || networkIndicators.isLoading || freeIndicators.isLoading || bitcoinMagazineIndicators.isLoading || advancedIndicators.isLoading
   
   // Calculate composite score directly without useEffect to avoid loops
   const compositeScore = useMemo<CompositeScoreType>(() => {
@@ -191,7 +205,7 @@ export default function DashboardPage() {
               Live Data
             </Badge>
             <Badge variant="secondary" className="px-3 py-1">
-              24 Indicators
+              27 Indicators
             </Badge>
             <Badge variant="secondary" className="px-3 py-1">
               Auto Refresh
@@ -226,11 +240,11 @@ export default function DashboardPage() {
                 <h2 className="text-xl font-semibold text-gray-900">
                   Primary Indicators
                 </h2>
-                <p className="text-sm text-gray-500">High impact signals (20-30% weight)</p>
+                <p className="text-sm text-gray-500">High impact signals (10%+ normalized weight)</p>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {INDICATOR_WEIGHTS.filter(w => w.weight >= 0.20).map(weight => {
+              {INDICATOR_WEIGHTS.filter(w => w.weight >= 0.10).map(weight => {
                 const indicator = indicators.get(weight.id)
                 if (!indicator) {
                   return (
@@ -275,11 +289,11 @@ export default function DashboardPage() {
                 <h2 className="text-xl font-semibold text-gray-900">
                   Secondary Indicators
                 </h2>
-                <p className="text-sm text-gray-500">Medium impact signals (10-18% weight)</p>
+                <p className="text-sm text-gray-500">Medium impact signals (5-10% normalized weight)</p>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {INDICATOR_WEIGHTS.filter(w => w.weight >= 0.10 && w.weight < 0.20).map(weight => {
+              {INDICATOR_WEIGHTS.filter(w => w.weight >= 0.05 && w.weight < 0.10).map(weight => {
                 const indicator = indicators.get(weight.id)
                 if (!indicator) {
                   return (
@@ -324,11 +338,11 @@ export default function DashboardPage() {
                 <h2 className="text-xl font-semibold text-gray-900">
                   Supporting Indicators
                 </h2>
-                <p className="text-sm text-gray-500">Low impact signals (5-8% weight)</p>
+                <p className="text-sm text-gray-500">Low impact signals (2-5% normalized weight)</p>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {INDICATOR_WEIGHTS.filter(w => w.weight >= 0.05 && w.weight < 0.10).map(weight => {
+              {INDICATOR_WEIGHTS.filter(w => w.weight >= 0.02 && w.weight < 0.05).map(weight => {
                 const indicator = indicators.get(weight.id)
                 if (!indicator) {
                   return (
@@ -373,11 +387,11 @@ export default function DashboardPage() {
                 <h2 className="text-xl font-semibold text-gray-900">
                   Minor Indicators
                 </h2>
-                <p className="text-sm text-gray-500">Supplementary signals (3-4% weight)</p>
+                <p className="text-sm text-gray-500">Supplementary signals (&lt;2% normalized weight)</p>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {INDICATOR_WEIGHTS.filter(w => w.weight < 0.05).map(weight => {
+              {INDICATOR_WEIGHTS.filter(w => w.weight < 0.02).map(weight => {
                 const indicator = indicators.get(weight.id)
                 if (!indicator) {
                   return (
