@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import { CompositeScore } from '@/components/dashboard/composite-score'
 import { MarketOverview } from '@/components/dashboard/market-overview'
-import { IndicatorCard } from '@/components/indicators/indicator-card'
+import { ModernIndicatorCard } from '@/components/indicators/modern-indicator-card'
 import { Badge } from '@/components/ui/badge'
 import { calculateCompositeScore, CompositeScore as CompositeScoreType } from '@/lib/indicators/composite'
 import { INDICATOR_WEIGHTS } from '@/lib/indicators/weights'
@@ -14,9 +14,16 @@ import { useFreeIndicators } from '@/lib/hooks/use-free-indicators'
 import { useBitcoinMagazineIndicators } from '@/lib/hooks/use-bitcoin-magazine'
 import { useAdvancedIndicators } from '@/lib/hooks/use-advanced-indicators'
 import { Activity, BarChart3, TrendingUp, Zap } from 'lucide-react'
+import { ModeToggle } from '@/components/education/mode-toggle'
+import { CycleProgress } from '@/components/education/cycle-progress'
+import { ActionRecommendations } from '@/components/education/action-recommendations'
+import { useEducationStore } from '@/lib/stores/education-store'
+import { BEGINNER_INDICATORS } from '@/lib/education/indicator-explanations'
+import { processIndicators } from '@/lib/indicators/signal-calculator'
 
 
 export default function DashboardPage() {
+  const { isBeginnerMode } = useEducationStore()
   const basicIndicators = useAllIndicators()
   const enhancedIndicators = useEnhancedIndicators()
   const networkIndicators = useNetworkIndicators()
@@ -46,7 +53,9 @@ export default function DashboardPage() {
     if (!advancedIndicators.isLoading) {
       advancedIndicators.indicators.forEach((value, key) => merged.set(key, value))
     }
-    return merged
+    
+    // Process all indicators to ensure proper signals
+    return processIndicators(merged)
   }, [
     basicIndicators.isLoading,
     enhancedIndicators.isLoading,
@@ -67,7 +76,14 @@ export default function DashboardPage() {
   // Calculate composite score directly without useEffect to avoid loops
   const compositeScore = useMemo<CompositeScoreType>(() => {
     if (indicators.size > 0 && !isLoading) {
-      return calculateCompositeScore(indicators)
+      // Convert bullish/bearish signals to buy/sell for composite score
+      const convertedIndicators = new Map()
+      indicators.forEach((value, key) => {
+        const signal = value.signal === 'bullish' ? 'buy' : 
+                      value.signal === 'bearish' ? 'sell' : 'neutral'
+        convertedIndicators.set(key, { ...value, signal })
+      })
+      return calculateCompositeScore(convertedIndicators)
     }
     return {
       overall: 50,
@@ -184,20 +200,35 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 relative">
+      {/* Background Pattern - Using CSS instead of inline SVG */}
+      <div className="fixed inset-0 opacity-[0.015]" 
+        style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, rgb(0,0,0) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px'
+        }}
+      />
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Header */}
         <div className="text-center space-y-4 py-8">
+          {/* Mode Toggle - Top Right */}
+          <div className="flex justify-end mb-4">
+            <ModeToggle />
+          </div>
+          
           <div className="inline-flex items-center gap-2 mb-4">
             <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-lg">
               <BarChart3 className="w-8 h-8 text-white" />
             </div>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-            Bitcoin Peak Indicator Dashboard
+            Bitcoin {isBeginnerMode ? 'Investment' : 'Peak Indicator'} Dashboard
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Advanced multi-indicator analysis for Bitcoin market cycle detection
+            {isBeginnerMode 
+              ? 'Simple, data-driven insights for smarter Bitcoin investing'
+              : 'Advanced multi-indicator analysis for Bitcoin market cycle detection'}
           </p>
           <div className="flex justify-center gap-3 pt-4">
             <Badge variant="success" className="px-3 py-1">
@@ -205,7 +236,7 @@ export default function DashboardPage() {
               Live Data
             </Badge>
             <Badge variant="secondary" className="px-3 py-1">
-              27 Indicators
+              {isBeginnerMode ? '5 Key' : '27'} Indicators
             </Badge>
             <Badge variant="secondary" className="px-3 py-1">
               Auto Refresh
@@ -228,8 +259,78 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Educational Components - Show in Beginner Mode */}
+        {isBeginnerMode && (
+          <div className="space-y-6">
+            {/* Cycle Progress Bar */}
+            <CycleProgress indicators={indicators} />
+            
+            {/* Action Recommendations */}
+            <ActionRecommendations 
+              compositeScore={compositeScore} 
+              indicators={indicators} 
+            />
+          </div>
+        )}
+
         {/* Indicators Sections */}
         <div className="space-y-8">
+          {/* Beginner Mode - Simplified View */}
+          {isBeginnerMode ? (
+            <section>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <Zap className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Key Indicators
+                  </h2>
+                  <p className="text-sm text-gray-500">The most important signals for Bitcoin investing</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {BEGINNER_INDICATORS.map(indicatorId => {
+                  const weight = INDICATOR_WEIGHTS.find(w => w.id === indicatorId)
+                  if (!weight) return null
+                  
+                  const indicator = indicators.get(indicatorId)
+                  if (!indicator) {
+                    return (
+                      <ModernIndicatorCard
+                        key={indicatorId}
+                        indicator={{
+                          id: indicatorId,
+                          name: weight.name,
+                          value: 0,
+                          signal: 'neutral',
+                          confidence: 0
+                        }}
+                        weight={weight.weight}
+                        name={weight.name}
+                        description={weight.description}
+                        dataSource={weight.dataSource}
+                        isLive={weight.isLive}
+                        loading={true}
+                      />
+                    )
+                  }
+                  return (
+                    <ModernIndicatorCard
+                      key={indicatorId}
+                      indicator={indicator}
+                      weight={weight.weight}
+                      name={weight.name}
+                      description={weight.description}
+                      dataSource={weight.dataSource}
+                      isLive={weight.isLive}
+                    />
+                  )
+                })}
+              </div>
+            </section>
+          ) : (
+            <>
           {/* Primary Indicators */}
           <section>
             <div className="flex items-center gap-3 mb-6">
@@ -243,34 +344,36 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-500">High impact signals (10%+ normalized weight)</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {INDICATOR_WEIGHTS.filter(w => w.weight >= 0.10).map(weight => {
                 const indicator = indicators.get(weight.id)
                 if (!indicator) {
                   return (
-                    <IndicatorCard
+                    <ModernIndicatorCard
                       key={weight.id}
-                      name={weight.name}
-                      value="Loading..."
-                      signal="neutral"
+                      indicator={{
+                        id: weight.id,
+                        name: weight.name,
+                        value: 0,
+                        signal: 'neutral',
+                        confidence: 0
+                      }}
                       weight={weight.weight}
-                      confidence={0}
+                      name={weight.name}
                       description={weight.description}
                       dataSource={weight.dataSource}
                       isLive={weight.isLive}
+                      loading={true}
                     />
                   )
                 }
                 return (
-                  <IndicatorCard
+                  <ModernIndicatorCard
                     key={weight.id}
-                    name={weight.name}
-                    value={indicator.value}
-                    signal={indicator.signal}
+                    indicator={indicator}
                     weight={weight.weight}
-                    confidence={indicator.confidence}
+                    name={weight.name}
                     description={weight.description}
-                    lastUpdate={new Date()}
                     dataSource={weight.dataSource}
                     isLive={weight.isLive}
                   />
@@ -292,34 +395,36 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-500">Medium impact signals (5-10% normalized weight)</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {INDICATOR_WEIGHTS.filter(w => w.weight >= 0.05 && w.weight < 0.10).map(weight => {
                 const indicator = indicators.get(weight.id)
                 if (!indicator) {
                   return (
-                    <IndicatorCard
+                    <ModernIndicatorCard
                       key={weight.id}
-                      name={weight.name}
-                      value="Loading..."
-                      signal="neutral"
+                      indicator={{
+                        id: weight.id,
+                        name: weight.name,
+                        value: 0,
+                        signal: 'neutral',
+                        confidence: 0
+                      }}
                       weight={weight.weight}
-                      confidence={0}
+                      name={weight.name}
                       description={weight.description}
                       dataSource={weight.dataSource}
                       isLive={weight.isLive}
+                      loading={true}
                     />
                   )
                 }
                 return (
-                  <IndicatorCard
+                  <ModernIndicatorCard
                     key={weight.id}
-                    name={weight.name}
-                    value={indicator.value}
-                    signal={indicator.signal}
+                    indicator={indicator}
                     weight={weight.weight}
-                    confidence={indicator.confidence}
+                    name={weight.name}
                     description={weight.description}
-                    lastUpdate={new Date()}
                     dataSource={weight.dataSource}
                     isLive={weight.isLive}
                   />
@@ -341,34 +446,36 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-500">Low impact signals (2-5% normalized weight)</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {INDICATOR_WEIGHTS.filter(w => w.weight >= 0.02 && w.weight < 0.05).map(weight => {
                 const indicator = indicators.get(weight.id)
                 if (!indicator) {
                   return (
-                    <IndicatorCard
+                    <ModernIndicatorCard
                       key={weight.id}
-                      name={weight.name}
-                      value="Loading..."
-                      signal="neutral"
+                      indicator={{
+                        id: weight.id,
+                        name: weight.name,
+                        value: 0,
+                        signal: 'neutral',
+                        confidence: 0
+                      }}
                       weight={weight.weight}
-                      confidence={0}
+                      name={weight.name}
                       description={weight.description}
                       dataSource={weight.dataSource}
                       isLive={weight.isLive}
+                      loading={true}
                     />
                   )
                 }
                 return (
-                  <IndicatorCard
+                  <ModernIndicatorCard
                     key={weight.id}
-                    name={weight.name}
-                    value={indicator.value}
-                    signal={indicator.signal}
+                    indicator={indicator}
                     weight={weight.weight}
-                    confidence={indicator.confidence}
+                    name={weight.name}
                     description={weight.description}
-                    lastUpdate={new Date()}
                     dataSource={weight.dataSource}
                     isLive={weight.isLive}
                   />
@@ -390,34 +497,36 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-500">Supplementary signals (&lt;2% normalized weight)</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {INDICATOR_WEIGHTS.filter(w => w.weight < 0.02).map(weight => {
                 const indicator = indicators.get(weight.id)
                 if (!indicator) {
                   return (
-                    <IndicatorCard
+                    <ModernIndicatorCard
                       key={weight.id}
-                      name={weight.name}
-                      value="Loading..."
-                      signal="neutral"
+                      indicator={{
+                        id: weight.id,
+                        name: weight.name,
+                        value: 0,
+                        signal: 'neutral',
+                        confidence: 0
+                      }}
                       weight={weight.weight}
-                      confidence={0}
+                      name={weight.name}
                       description={weight.description}
                       dataSource={weight.dataSource}
                       isLive={weight.isLive}
+                      loading={true}
                     />
                   )
                 }
                 return (
-                  <IndicatorCard
+                  <ModernIndicatorCard
                     key={weight.id}
-                    name={weight.name}
-                    value={indicator.value}
-                    signal={indicator.signal}
+                    indicator={indicator}
                     weight={weight.weight}
-                    confidence={indicator.confidence}
+                    name={weight.name}
                     description={weight.description}
-                    lastUpdate={new Date()}
                     dataSource={weight.dataSource}
                     isLive={weight.isLive}
                   />
@@ -425,6 +534,8 @@ export default function DashboardPage() {
               })}
             </div>
           </section>
+            </>
+          )}
         </div>
 
         {/* Footer */}

@@ -264,9 +264,11 @@ export class ExchangeReservesClient {
   }
 
   // Track whale movements to/from exchanges
-  async trackWhaleMovements(_minAmount: number = 100): Promise<Array<unknown>> {
+  async trackWhaleMovements(minAmount: number = 100): Promise<Array<unknown>> {
     // This would require WebSocket connection or frequent polling
     // For now, return empty array
+    // minAmount parameter will be used when implementing actual tracking
+    console.log(`Tracking whale movements above ${minAmount} BTC`)
     return [];
   }
 }
